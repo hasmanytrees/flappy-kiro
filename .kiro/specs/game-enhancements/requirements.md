@@ -78,3 +78,11 @@ This document specifies enhancements to the Flappy Kiro game that add score pers
 3. WHEN confetti particles exist THEN the Game System SHALL apply gravity to make them fall naturally
 4. WHEN confetti particles exist THEN the Game System SHALL use multiple colors including purple, white, and complementary colors
 5. WHEN confetti particles fall below the canvas bottom THEN the Game System SHALL remove them from rendering
+
+### Requirement 6
+**User Story:** As a player, when I press the 'p' key on the keyboard I want the game to pause and unpause
+
+#### Acceptance Criteria
+
+1.  WHEN a player presses the 'p' key on the keyboard THEN the game is paused
+2.  WHEN the game is paused and a player presses the 'p' key on the keyboard THEN the game is unpaused

@@ -22,7 +22,28 @@ The design follows the existing game architecture pattern:
 
 ## Components and Interfaces
 
-### 1. Score Persistence Module
+### 1. Pause System
+
+**Purpose**: Handle game pause/unpause functionality via keyboard input
+
+**Interface**:
+```javascript
+// State variable
+let isPaused = false;
+
+// Functions
+function togglePause()
+function handlePauseInput(event)
+```
+
+**Responsibilities**:
+- Listen for 'p' key press events
+- Toggle pause state when 'p' is pressed
+- Prevent game updates when paused
+- Display pause indicator on screen
+- Allow pause only during 'playing' state
+
+### 2. Score Persistence Module
 
 **Purpose**: Handle reading and writing scores to browser local storage
 
@@ -96,10 +117,22 @@ function createConfetti()
 - **Behavior**: 30-40 particles spawned across top of screen, fall with gravity
 - **Visual**: Multiple colors (purple, white, complementary colors), rectangular shapes, rotate while falling
 
+### 4. Pause System
+
+**Purpose**: Allow players to pause and resume gameplay
+
+**Behavior**:
+- **Trigger**: 'p' key press during 'playing' state
+- **Pause State**: Stops all game updates (player physics, pipe movement, particle updates)
+- **Visual Feedback**: Semi-transparent overlay with "PAUSED" text and instructions
+- **Resume**: Press 'p' again to unpause and continue gameplay
+- **State Restrictions**: Pause only available during active gameplay, not on start or game over screens
+
 ## Data Models
 
 ### Extended Game State
 ```javascript
+let isPaused = false;           // Pause state flag
 let highScore = 0;              // Loaded from local storage
 let lastHighScore = 0;          // Track previous high score for confetti trigger
 let particles = [];             // Array of active particles
@@ -126,6 +159,20 @@ let confettiTriggered = false;  // Flag to prevent multiple confetti triggers
 
 
 *A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
+
+### Pause System Properties
+
+**Property 19: Pause toggle on 'p' key press**
+*For any* game in 'playing' state, pressing the 'p' key should toggle the isPaused flag from false to true or true to false.
+**Validates: Requirements 6.1, 6.2**
+
+**Property 20: Game updates halt when paused**
+*For any* game frame while isPaused is true, player position, pipe positions, and score should remain unchanged.
+**Validates: Requirements 6.1**
+
+**Property 21: Pause only during gameplay**
+*For any* game state other than 'playing', pressing the 'p' key should not change the isPaused flag.
+**Validates: Requirements 6.1, 6.2**
 
 ### Score Persistence Properties
 
@@ -307,3 +354,6 @@ Property-based tests will verify universal properties across many random inputs 
 - Add particle draw call in draw function after background, before player
 - Hook score persistence into existing `gameOver()` function
 - Hook effect triggers into existing game events (collision, scoring)
+- Add pause key listener to existing input handling
+- Wrap update functions with pause check to prevent updates when paused
+- Add pause indicator overlay in draw function when isPaused is true

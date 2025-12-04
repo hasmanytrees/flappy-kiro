@@ -24,6 +24,7 @@ const COLORS = {
 
 // Game state
 let gameState = 'start'; // 'start', 'playing', 'gameOver'
+let isPaused = false; // Pause state
 let score = 0;
 let highScore = 0;
 let lastHighScore = 0; // Track previous high score for confetti trigger
@@ -94,6 +95,8 @@ function updateHighScoreIfNeeded(currentScore) {
 
 // Particle system functions
 function updateParticles() {
+    if (isPaused) return;
+    
     // Update all particles and remove dead ones
     for (let i = particles.length - 1; i >= 0; i--) {
         const particle = particles[i];
@@ -280,11 +283,21 @@ function createConfetti() {
     }
 }
 
+// Pause toggle function
+function togglePause() {
+    if (gameState === 'playing') {
+        isPaused = !isPaused;
+    }
+}
+
 // Input handling
 document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') {
         e.preventDefault();
         handleInput();
+    } else if (e.code === 'KeyP') {
+        e.preventDefault();
+        togglePause();
     }
 });
 
@@ -310,6 +323,7 @@ function resetGame() {
     pipes = [];
     score = 0;
     frameCount = 0;
+    isPaused = false; // Reset pause state for new game
     confettiTriggered = false; // Reset confetti flag for new game session
     updateScoreDisplay();
 }
@@ -332,7 +346,7 @@ function createPipe() {
 }
 
 function updatePlayer() {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || isPaused) return;
     
     // Apply gravity
     player.velocity += GRAVITY;
@@ -355,7 +369,7 @@ function updatePlayer() {
 }
 
 function updatePipes() {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || isPaused) return;
     
     // Spawn new pipes
     frameCount++;
@@ -388,7 +402,7 @@ function updatePipes() {
 }
 
 function checkCollisions() {
-    if (gameState !== 'playing') return;
+    if (gameState !== 'playing' || isPaused) return;
     
     for (const pipe of pipes) {
         // Check if player is in pipe's x range
@@ -490,6 +504,20 @@ function drawGameOverScreen() {
     ctx.fillText('Press SPACE or click to restart', canvas.width / 2, canvas.height / 2 + 70);
 }
 
+function drawPauseScreen() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = COLORS.purple500;
+    ctx.font = 'bold 64px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2 - 20);
+    
+    ctx.font = '24px sans-serif';
+    ctx.fillStyle = COLORS.white;
+    ctx.fillText('Press P to resume', canvas.width / 2, canvas.height / 2 + 40);
+}
+
 function draw() {
     drawBackground();
     
@@ -503,6 +531,8 @@ function draw() {
         drawStartScreen();
     } else if (gameState === 'gameOver') {
         drawGameOverScreen();
+    } else if (gameState === 'playing' && isPaused) {
+        drawPauseScreen();
     }
 }
 

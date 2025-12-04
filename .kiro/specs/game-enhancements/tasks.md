@@ -105,3 +105,26 @@
   - Test confetti triggers only once per high score
   - Test confetti cleanup below canvas
   - _Requirements: 5.1, 5.5_
+
+- [x] 6. Implement pause/unpause functionality
+  - Add isPaused state variable to game state
+  - Create togglePause() function to switch pause state
+  - Add keyboard event listener for 'p' key press
+  - Modify update functions (updatePlayer, updatePipes, updateParticles) to check isPaused before executing
+  - Create drawPauseScreen() function to display pause overlay
+  - Integrate pause screen rendering into main draw function
+  - Ensure pause only works during 'playing' state
+  - _Requirements: 6.1, 6.2_
+
+- [ ]* 6.1 Write property test for pause toggle
+  - **Property 19: Pause toggle on 'p' key press**
+  - **Validates: Requirements 6.1, 6.2**
+
+- [ ]* 6.2 Write property test for game state during pause
+  - **Property 20: Game updates halt when paused**
+  - **Validates: Requirements 6.1**
+
+- [ ]* 6.3 Write unit tests for pause restrictions
+  - Test pause only works during 'playing' state
+  - Test pause doesn't affect start or game over screens
+  - _Requirements: 6.1, 6.2_
