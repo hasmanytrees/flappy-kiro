@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle System Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0a0a;
+            color: white;
+            font-family: sans-serif;
+        }
+        #testCanvas {
+            border: 2px solid #790ECB;
+            display: block;
+            margin: 20px auto;
+        }
+        .test-results {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        .test-pass { color: #4ade80; }
+        .test-fail { color: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="test-results">
+        <h1>Particle System Foundation Tests</h1>
+        <div id="results"></div>
+    </div>
+    <canvas id="testCanvas" width="800" height="600"></canvas>
+
+    <script>
+        // Setup test canvas
+        const canvas = document.getElementById('testCanvas');
+        const ctx = canvas.getContext('2d');
+        const resultsDiv = document.getElementById('results');
+
+        // Particle system (copied from game.js)
+        let particles = [];
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.life -= 1 / particle.maxLife;
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles() {
+            for (const particle of particles) {
+                if (isNaN(particle.x) || isNaN(particle.y) || particle.life < 0) {
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, Math.min(1, particle.life));
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Test functions
+        function logTest(name, passed, details = '') {
+            const status = passed ? '<span class="test-pass">✓ PASS</span>' : '<span class="test-fail">✗ FAIL</span>';
+            resultsDiv.innerHTML += `<p>${status} - ${name} ${details}</p>`;
+        }
+
+        // Test 1: Particle array initialization
+        logTest('Particle array initialized', Array.isArray(particles) && particles.length === 0);
+
+        // Test 2: Add particle with proper structure
+        particles.push({
+            x: 100,
+            y: 100,
+            vx: 1,
+            vy: -1,
+            life: 1.0,
+            maxLife: 60,
+            size: 5,
+            color: '#790ECB',
+            type: 'test'
+        });
+        logTest('Particle added to array', particles.length === 1);
+
+        // Test 3: Particle lifecycle - life decreases
+        const initialLife = particles[0].life;
+        updateParticles();
+        logTest('Particle life decreases on update', particles[0].life < initialLife, 
+            `(${initialLife.toFixed(3)} → ${particles[0].life.toFixed(3)})`);
+
+        // Test 4: Particle position updates
+        const initialX = particles[0].x;
+        const initialY = particles[0].y;
+        updateParticles();
+        logTest('Particle position updates with velocity', 
+            particles[0].x !== initialX && particles[0].y !== initialY,
+            `(${initialX}, ${initialY}) → (${particles[0].x}, ${particles[0].y})`);
+
+        // Test 5: Particle cleanup when life reaches zero
+        particles[0].life = 0.01;
+        particles[0].maxLife = 1;
+        updateParticles();
+        logTest('Particle removed when life reaches zero', particles.length === 0);
+
+        // Test 6: Multiple particles management
+        for (let i = 0; i < 5; i++) {
+            particles.push({
+                x: 100 + i * 50,
+                y: 100,
+                vx: Math.random() * 2 - 1,
+                vy: Math.random() * 2 - 1,
+                life: 1.0,
+                maxLife: 30,
+                size: 3,
+                color: '#9B3FE8',
+                type: 'test'
+            });
+        }
+        logTest('Multiple particles added', particles.length === 5);
+
+        // Visual test - draw particles
+        let frameCount = 0;
+        function testLoop() {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add new particle every 10 frames
+            if (frameCount % 10 === 0 && particles.length < 50) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: Math.random() * 4 - 2,
+                    vy: Math.random() * 4 - 2,
+                    life: 1.0,
+                    maxLife: 60,
+                    size: Math.random() * 5 + 2,
+                    color: Math.random() > 0.5 ? '#790ECB' : '#9B3FE8',
+                    type: 'visual-test'
+                });
+            }
+            
+            updateParticles();
+            drawParticles();
+            
+            frameCount++;
+            requestAnimationFrame(testLoop);
+        }
+
+        // Start visual test after a short delay
+        setTimeout(() => {
+            resultsDiv.innerHTML += '<p><strong>Visual Test:</strong> Particles should be visible on canvas above</p>';
+            testLoop();
+        }, 100);
+    </script>
+</body>
+</html>
